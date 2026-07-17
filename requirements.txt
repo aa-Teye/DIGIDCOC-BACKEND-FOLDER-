@@ -1,8 +1,13 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
+email-validator==2.2.0
 python-dotenv==1.0.1
 sqlalchemy==2.0.35
-psycopg2-binary==2.9.9
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+bcrypt==4.2.0
+
+# Postgres driver — install when DATABASE_URL points at Supabase/Neon instead of
+# the local SQLite default. psycopg2-binary has no Python 3.13 wheel yet; use
+# psycopg[binary] (psycopg3) instead, which SQLAlchemy 2.x also supports.
+# psycopg[binary]==3.2.3

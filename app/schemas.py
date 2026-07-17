@@ -1,0 +1,81 @@
+from datetime import datetime
+from typing import Literal
+
+from pydantic import BaseModel, EmailStr
+
+Role = Literal["patient", "doctor", "nurse", "admin"]
+
+
+class RegisterRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: str
+    password: str
+    role: Literal["patient", "doctor", "nurse"]
+
+
+class LoginRequest(BaseModel):
+    identifier: str  # email or phone
+    password: str
+
+
+class VerifyOtpRequest(BaseModel):
+    user_id: int
+    code: str
+
+
+class UserOut(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    phone: str
+    role: Role
+    phone_verified: bool
+
+    model_config = {"from_attributes": True}
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+
+
+class RegisterResponse(BaseModel):
+    user_id: int
+    # Dev-mode only: the OTP is normally sent via SMS. No SMS gateway is wired up
+    # yet (Sprint 5+), so it's returned here so the flow is testable end to end.
+    dev_otp_code: str
+
+
+class PatientProfileIn(BaseModel):
+    date_of_birth: str | None = None
+    sex: str | None = None
+    blood_type: str | None = None
+    conditions: list[str] = []
+    other_conditions: str | None = None
+    medication_allergies: list[str] = []
+    food_allergies: str | None = None
+    medications: str | None = None
+
+
+class VerificationRequestIn(BaseModel):
+    full_name: str
+    license_number: str
+    role: Literal["doctor", "nurse", "specialist"]
+    specialty: str | None = None
+    years_experience: int | None = None
+
+
+class VerificationRequestOut(BaseModel):
+    id: int
+    user_id: int
+    full_name: str
+    email: str
+    role: str
+    specialty: str | None
+    license_number: str
+    status: str
+    submitted_at: datetime
+
+    model_config = {"from_attributes": True}
