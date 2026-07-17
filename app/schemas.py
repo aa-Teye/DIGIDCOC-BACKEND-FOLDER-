@@ -91,3 +91,82 @@ class SubscriptionOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class MedicalRecordIn(BaseModel):
+    category: Literal["Reports", "Prescriptions", "Imaging"]
+    title: str
+    prescriber: str
+    record_date: str
+
+
+class MedicalRecordOut(MedicalRecordIn):
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
+class FamilyMemberIn(BaseModel):
+    name: str
+    relation: str
+
+
+class FamilyMemberOut(FamilyMemberIn):
+    id: int
+    status: str
+
+    model_config = {"from_attributes": True}
+
+
+class MessageIn(BaseModel):
+    text: str
+
+
+class MessageOut(BaseModel):
+    id: int
+    sender: Literal["patient", "provider"]
+    text: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ConversationOut(BaseModel):
+    id: int
+    provider_name: str
+    provider_role: str
+    messages: list[MessageOut]
+
+    model_config = {"from_attributes": True}
+
+
+class InvoiceOut(BaseModel):
+    id: int
+    description: str
+    amount_ghc: float
+    invoice_date: str
+
+    model_config = {"from_attributes": True}
+
+
+class NotificationPreferenceOut(BaseModel):
+    appointments_push: bool
+    appointments_email: bool
+    appointments_sms: bool
+    records_push: bool
+    records_email: bool
+    records_sms: bool
+    messages_push: bool
+    messages_email: bool
+    messages_sms: bool
+    news_push: bool
+    news_email: bool
+    news_sms: bool
+    emergency_alerts: bool
+    quiet_hours: bool
+
+    model_config = {"from_attributes": True}
+
+
+class NotificationPreferenceIn(NotificationPreferenceOut):
+    pass

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models
 from app.database import Base, SessionLocal, engine
-from app.routers import admin, auth, patients, providers
+from app.routers import admin, auth, messaging, patients, providers, records
 from app.security import hash_password
 
 SEED_ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL", "admin@digidoc.app")
@@ -53,6 +53,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(patients.router)
+app.include_router(records.router)
+app.include_router(messaging.router)
 app.include_router(providers.router)
 app.include_router(admin.router)
 

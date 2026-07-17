@@ -83,3 +83,84 @@ class Subscription(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     user: Mapped["User"] = relationship(back_populates="subscription")
+
+
+class MedicalRecord(Base):
+    __tablename__ = "medical_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    category: Mapped[str] = mapped_column(String(24))  # Reports | Prescriptions | Imaging
+    title: Mapped[str] = mapped_column(String(255))
+    prescriber: Mapped[str] = mapped_column(String(255))
+    record_date: Mapped[str] = mapped_column(String(32))  # display string, e.g. "Oct 15, 2024"
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class FamilyMember(Base):
+    __tablename__ = "family_members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    primary_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    relation: Mapped[str] = mapped_column(String(32))  # Spouse | Child | ...
+    status: Mapped[str] = mapped_column(String(24), default="Active")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    provider_name: Mapped[str] = mapped_column(String(255))
+    provider_role: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    messages: Mapped[list["Message"]] = relationship(
+        back_populates="conversation", cascade="all, delete-orphan", order_by="Message.created_at"
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    conversation_id: Mapped[int] = mapped_column(ForeignKey("conversations.id"), index=True)
+    sender: Mapped[str] = mapped_column(String(16))  # patient | provider
+    text: Mapped[str] = mapped_column(String(2000))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    conversation: Mapped["Conversation"] = relationship(back_populates="messages")
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    description: Mapped[str] = mapped_column(String(255))
+    amount_ghc: Mapped[float] = mapped_column()
+    invoice_date: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class NotificationPreference(Base):
+    __tablename__ = "notification_preferences"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    appointments_push: Mapped[bool] = mapped_column(default=True)
+    appointments_email: Mapped[bool] = mapped_column(default=True)
+    appointments_sms: Mapped[bool] = mapped_column(default=True)
+    records_push: Mapped[bool] = mapped_column(default=True)
+    records_email: Mapped[bool] = mapped_column(default=True)
+    records_sms: Mapped[bool] = mapped_column(default=False)
+    messages_push: Mapped[bool] = mapped_column(default=True)
+    messages_email: Mapped[bool] = mapped_column(default=True)
+    messages_sms: Mapped[bool] = mapped_column(default=False)
+    news_push: Mapped[bool] = mapped_column(default=False)
+    news_email: Mapped[bool] = mapped_column(default=False)
+    news_sms: Mapped[bool] = mapped_column(default=False)
+    emergency_alerts: Mapped[bool] = mapped_column(default=True)
+    quiet_hours: Mapped[bool] = mapped_column(default=True)
