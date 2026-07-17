@@ -79,3 +79,15 @@ class VerificationRequestOut(BaseModel):
     submitted_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class SubscriptionIn(BaseModel):
+    plan: Literal["basic", "personal", "family"]
+
+
+class SubscriptionOut(BaseModel):
+    plan: str
+    status: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

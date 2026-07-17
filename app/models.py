@@ -33,6 +33,9 @@ class User(Base):
     verification_request: Mapped["VerificationRequest | None"] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
+    subscription: Mapped["Subscription | None"] = relationship(
+        back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class PatientProfile(Base):
@@ -66,3 +69,17 @@ class VerificationRequest(Base):
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="verification_request")
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    plan: Mapped[str] = mapped_column(String(16))  # basic | personal | family
+    # TODO(sprint-5+): real values once Paystack is wired up. No PAYSTACK_SECRET_KEY
+    # exists yet, so nothing here is ever actually charged.
+    status: Mapped[str] = mapped_column(String(24), default="pending_payment")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="subscription")
