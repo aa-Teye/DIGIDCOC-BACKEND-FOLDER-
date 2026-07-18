@@ -149,6 +149,17 @@ class InvoiceOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ActivityEventOut(BaseModel):
+    id: int
+    event_type: Literal["telehealth", "in_person", "record_upload", "prescription"]
+    title: str
+    subtitle: str
+    note: str | None
+    event_date: str
+
+    model_config = {"from_attributes": True}
+
+
 class NotificationPreferenceOut(BaseModel):
     appointments_push: bool
     appointments_email: bool

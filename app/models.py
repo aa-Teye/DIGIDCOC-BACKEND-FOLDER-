@@ -145,6 +145,19 @@ class Invoice(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class ActivityEvent(Base):
+    __tablename__ = "activity_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    event_type: Mapped[str] = mapped_column(String(24))  # telehealth|in_person|record_upload|prescription
+    title: Mapped[str] = mapped_column(String(255))
+    subtitle: Mapped[str] = mapped_column(String(255))
+    note: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    event_date: Mapped[str] = mapped_column(String(32))  # display string, e.g. "Oct 24, 2024 · 10:30 AM"
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class NotificationPreference(Base):
     __tablename__ = "notification_preferences"
 

@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import FamilyMember, Invoice, MedicalRecord, NotificationPreference, User
+from app.models import ActivityEvent, FamilyMember, Invoice, MedicalRecord, NotificationPreference, User
 from app.schemas import (
+    ActivityEventOut,
     FamilyMemberIn,
     FamilyMemberOut,
     InvoiceOut,
@@ -37,6 +38,37 @@ _SEED_RECORDS = [
 _SEED_FAMILY = [
     ("Mark Owusu", "Spouse", "Active"),
     ("Leo Owusu", "Child", "Needs update"),
+]
+
+_SEED_ACTIVITY = [
+    (
+        "telehealth",
+        "Follow-up Consultation",
+        "Dr. Derrick, Primary Care",
+        None,
+        "Oct 24, 2024 · 10:30 AM",
+    ),
+    (
+        "in_person",
+        "Immunization Administration",
+        "Nurse Adjoa Boateng, RN",
+        "Annual influenza vaccine administered in left deltoid. Patient observed for 15 minutes post-injection with no adverse reactions.",
+        "Oct 20, 2024 · 2:15 PM",
+    ),
+    (
+        "record_upload",
+        "Comprehensive Metabolic Panel",
+        "Uploaded from City Lab Diagnostics",
+        None,
+        "Oct 15, 2024 · 9:00 AM",
+    ),
+    (
+        "prescription",
+        "Prescription Renewed",
+        "Lisinopril 10mg - 90 Day Supply",
+        None,
+        "Oct 10, 2024 · 4:45 PM",
+    ),
 ]
 
 _SEED_INVOICES = [
@@ -138,6 +170,37 @@ def add_family_member(
     db.commit()
     db.refresh(member)
     return member
+
+
+@router.get("/activity", response_model=list[ActivityEventOut])
+def list_activity(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    _require_patient(current_user)
+    events = (
+        db.query(ActivityEvent)
+        .filter(ActivityEvent.patient_id == current_user.id)
+        .order_by(ActivityEvent.id.asc())  # seed data is listed newest-first already
+        .all()
+    )
+    if not events:
+        for event_type, title, subtitle, note, event_date in _SEED_ACTIVITY:
+            db.add(
+                ActivityEvent(
+                    patient_id=current_user.id,
+                    event_type=event_type,
+                    title=title,
+                    subtitle=subtitle,
+                    note=note,
+                    event_date=event_date,
+                )
+            )
+        db.commit()
+        events = (
+            db.query(ActivityEvent)
+            .filter(ActivityEvent.patient_id == current_user.id)
+            .order_by(ActivityEvent.id.asc())
+            .all()
+        )
+    return events
 
 
 @router.get("/invoices", response_model=list[InvoiceOut])
