@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -7,6 +9,9 @@ from app.models import Conversation, Message, User
 from app.schemas import ConversationOut, MessageIn, MessageOut
 
 router = APIRouter(prefix="/patients/me", tags=["patient-messaging"])
+
+# See app/routers/records.py for the rationale — same toggle, same reasoning.
+SEED_DEMO_DATA = os.getenv("SEED_DEMO_DATA", "true").lower() == "true"
 
 
 def _require_patient(user: User) -> None:
@@ -66,7 +71,7 @@ def list_conversations(db: Session = Depends(get_db), current_user: User = Depen
         .order_by(Conversation.id)
         .all()
     )
-    if not conversations:
+    if not conversations and SEED_DEMO_DATA:
         _seed_conversations(db, current_user.id)
         conversations = (
             db.query(Conversation)

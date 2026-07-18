@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -16,6 +18,11 @@ from app.schemas import (
 )
 
 router = APIRouter(prefix="/patients/me", tags=["patient-records"])
+
+# Defaults to on so local dev/demos still show populated screens. Set
+# SEED_DEMO_DATA=false before a real launch — real patients should see an
+# empty state, not sample data, on their first visit to these screens.
+SEED_DEMO_DATA = os.getenv("SEED_DEMO_DATA", "true").lower() == "true"
 
 
 def _require_patient(user: User) -> None:
@@ -89,7 +96,7 @@ def list_records(db: Session = Depends(get_db), current_user: User = Depends(get
         .order_by(MedicalRecord.id.desc())
         .all()
     )
-    if not records:
+    if not records and SEED_DEMO_DATA:
         for category, title, prescriber, record_date in _SEED_RECORDS:
             db.add(
                 MedicalRecord(
@@ -133,7 +140,7 @@ def list_family(db: Session = Depends(get_db), current_user: User = Depends(get_
         .order_by(FamilyMember.id)
         .all()
     )
-    if not members:
+    if not members and SEED_DEMO_DATA:
         for name, relation, member_status in _SEED_FAMILY:
             db.add(
                 FamilyMember(
@@ -181,7 +188,7 @@ def list_activity(db: Session = Depends(get_db), current_user: User = Depends(ge
         .order_by(ActivityEvent.id.asc())  # seed data is listed newest-first already
         .all()
     )
-    if not events:
+    if not events and SEED_DEMO_DATA:
         for event_type, title, subtitle, note, event_date in _SEED_ACTIVITY:
             db.add(
                 ActivityEvent(
@@ -209,7 +216,7 @@ def list_invoices(db: Session = Depends(get_db), current_user: User = Depends(ge
     invoices = (
         db.query(Invoice).filter(Invoice.user_id == current_user.id).order_by(Invoice.id.desc()).all()
     )
-    if not invoices:
+    if not invoices and SEED_DEMO_DATA:
         for invoice_date, description, amount in _SEED_INVOICES:
             db.add(
                 Invoice(
